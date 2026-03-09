@@ -141,12 +141,18 @@ app.get("/sse", authMiddleware, async (req, res) => {
 
 // No authMiddleware here — the sessionId is proof the client already authenticated on /sse
 app.post("/messages", async (req, res) => {
-  const sessionId  = req.query.sessionId;
-  const transport  = sseTransports.get(sessionId);
+  const sessionId = req.query.sessionId;
+
+  // Try by sessionId first, then fall back to the single active session.
+  // ElevenLabs posts to /messages without a sessionId, so we need the fallback.
+  let transport = sseTransports.get(sessionId);
+  if (!transport && sseTransports.size === 1) {
+    transport = [...sseTransports.values()][0];
+  }
 
   if (!transport) {
-    console.warn(`[SSE-POST] No transport for session: ${sessionId}`);
-    return res.status(404).json({ error: "Session not found or expired" });
+    console.warn(`[SSE-POST] No transport found (sessionId=${sessionId}, active=${sseTransports.size})`);
+    return res.status(404).json({ error: "No active session found" });
   }
 
   await transport.handlePostMessage(req, res);
