@@ -139,7 +139,8 @@ app.get("/sse", authMiddleware, async (req, res) => {
   await server.connect(transport);
 });
 
-app.post("/messages", authMiddleware, async (req, res) => {
+// No authMiddleware here — the sessionId is proof the client already authenticated on /sse
+app.post("/messages", async (req, res) => {
   const sessionId  = req.query.sessionId;
   const transport  = sseTransports.get(sessionId);
 
