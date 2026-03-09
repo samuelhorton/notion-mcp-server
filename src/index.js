@@ -155,7 +155,7 @@ app.post("/messages", async (req, res) => {
     return res.status(404).json({ error: "No active session found" });
   }
 
-  await transport.handlePostMessage(req, res);
+  await transport.handlePostMessage(req, res, req.body);
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
